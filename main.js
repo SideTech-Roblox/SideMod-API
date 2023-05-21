@@ -190,7 +190,9 @@ app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token')
         get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
           if (snapshot2.exists()) {
             if (snapshot2.val() === Token) {
-              // SOON
+              const JSONLog = JSON.parse(req.body);
+              console.log(JSONLog)
+
               res.status(200).json({ success: "Log entry added successfully!" });
             } else {
               res.status(400).json({ error: "Invalid API Token!" });
