@@ -191,9 +191,13 @@ app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token')
           if (snapshot2.exists()) {
             if (snapshot2.val() === Token) {
               const JSONLog = JSON.parse(Log);
+              const key = randomstring.generate(20);
               
               JSONLog.array.forEach(function (item, index) {
-                
+                const db = getDatabase();
+                update(ref(db, `GuildsDatabase/${GuildId}/PointsLogs/${key}`), {
+                  [item]: index
+                });
               });
 
               res.status(200).json({ success: "Log entry added successfully!" });
