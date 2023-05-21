@@ -179,40 +179,6 @@ app.get("/points/get", requireHeader('guild-id'), requireHeader('api-token'), (r
   }
 });
 
-app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
-  const GuildId = req.headers['guild-id'];
-  const Token = req.headers['api-token'];
-  const Log = req.body;
-  
-  if (Log) {
-    get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
-          if (snapshot2.exists()) {
-            if (snapshot2.val() === Token) {
-              const JSONLog = JSON.parse(Log);
-              
-              JSONLog.array.forEach(function (item, index) {
-                
-              });
-
-              res.status(200).json({ success: "Log entry added successfully!" });
-            } else {
-              res.status(400).json({ error: "Invalid API Token!" });
-            }
-          } else {
-            res.status(400).json({ error: "Invalid API Token!" });
-          }
-        });
-      } else {
-        res.status(400).json({ error: "Invalid GuildId!" });
-      }
-    });
-  } else {
-    res.status(400).json({ error: "Invalid Log!" });
-  }
-});
-
 app.get("/verify/get", (req, res) => {
   const userID = req.query.userid;
   
