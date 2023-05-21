@@ -1,7 +1,7 @@
 {
   "name": "api-sidemodroblox",
   "version": "0.0.1",
-  "description": "SideMod is a powerful moderation system that allows global bans all across the platform.",
+  "description": "SideMod API is made for developers to integrate SideMod features into their games!",
   "main": "main.js",
   "scripts": {
     "start": "node main.js"
@@ -16,13 +16,14 @@
     "point-of-view": "^6.3.0",
     "request": "^2.88.2",
     "firebase": "^9.17.2",
-    "firebase-functions": "^4.2.1"
+    "firebase-functions": "^4.2.1",
+    "randomstring": "^1.2.3"
   },
   "engines": {
     "node": "12.x"
   },
   "repository": {
-    "url": "https://github.com/SideTech-Roblox"
+    "url": "https://github.com/SideTech-Roblox/SideMod-API"
   },
   "license": "MIT",
   "keywords": [

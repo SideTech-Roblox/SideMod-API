@@ -8,6 +8,7 @@ dependencies:
   handlebars: 4.7.7
   noblox.js: 6.0.0
   point-of-view: 6.3.0
+  randomstring: 1.2.3
   request: 2.88.2
 packages:
   /@fastify/ajv-compiler/3.5.0:
@@ -677,6 +678,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==
+  /array-uniq/1.0.2:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha512-GVYjmpL05al4dNlKJm53mKE4w9OOLiuVHWorsIA3YVz+Hu0hcn6PtE3Ydl0EqU7v+7ABC4mjjWsnLUxbpno+CA==
   /asn1/0.2.6:
     dependencies:
       safer-buffer: 2.1.2
@@ -1955,6 +1962,18 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==
+  /randombytes/2.0.3:
+    dev: false
+    resolution:
+      integrity: sha512-lDVjxQQFoCG1jcrP06LNo2lbWp4QTShEXnhActFBwYuHprllQV6VUpwreApsYqCgD+N1mHoqJ/BI/4eV4R2GYg==
+  /randomstring/1.2.3:
+    dependencies:
+      array-uniq: 1.0.2
+      randombytes: 2.0.3
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-3dEFySepTzp2CvH6W/ASYGguPPveBuz5MpZ7MuoUkoVehmyNl9+F9c9GFVrz2QPbM9NXTIHGcmJDY/3j4677kQ==
   /range-parser/1.2.1:
     dev: false
     engines:
@@ -2518,4 +2537,5 @@ specifiers:
   handlebars: ^4.7.7
   noblox.js: ^6.0.0
   point-of-view: ^6.3.0
+  randomstring: ^1.2.3
   request: ^2.88.2
