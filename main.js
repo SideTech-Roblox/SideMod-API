@@ -182,56 +182,29 @@ app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token')
   const GuildId = req.headers['guild-id'];
   const Token = req.headers['api-token'];
 
-  const UserId = req.query.userid;
+  const Log = req.body;
   
-  if (UserId) {
-     get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
-       if (snapshot.exists()) {
-         get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
-           if (snapshot2.exists()) {
-             if (snapshot2.val() === Token) {
-               if (snapshot.child('UserData').exists()) {
-                 if (snapshot.child('UserData').child(UserId).exists()) {
-                    if (snapshot.child('UserData').child(UserId).child('Points').exists()) {
-                      const data = {
-                        RobloxId: UserId,
-                        Points: snapshot.child('UserData').child(UserId).child('Points').val()
-                      };
-                      res.status(200).json(data);
-                    } else {
-                      const data = {
-                        RobloxId: UserId,
-                        Points: 0
-                      };
-                      res.status(200).json(data);
-                    };
-                 } else {
-                   const data = {
-                     RobloxId: UserId,
-                     Points: 0
-                   };
-                   res.status(200).json(data);
-                 };
-               } else {
-                 const data = {
-                   RobloxId: UserId,
-                   Points: 0
-                 };
-                 res.status(200).json(data);
-               };
-             } else {
-               res.status(400).json({ error: "Invalid API Token!" });
-             }; 
-           } else {
-             res.status(400).json({ error: "Invalid API Token!" });
-           };
-         });
-       } else {
-          res.status(400).json({ error: "Invalid GuildId!" });
-       };
-     });
+  if (Log) {
+    get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
+          if (snapshot2.exists()) {
+            if (snapshot2.val() === Token) {
+              // SOON
+              res.status(200).json({ success: "Log entry added successfully!" });
+            } else {
+              res.status(400).json({ error: "Invalid API Token!" });
+            }
+          } else {
+            res.status(400).json({ error: "Invalid API Token!" });
+          }
+        });
+      } else {
+        res.status(400).json({ error: "Invalid GuildId!" });
+      }
+    });
   } else {
-   res.status(400).json({ error: "Invalid User!" });
+    res.status(400).json({ error: "Invalid Log!" });
   }
 });
 
