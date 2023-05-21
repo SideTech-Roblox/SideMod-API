@@ -181,7 +181,6 @@ app.get("/points/get", requireHeader('guild-id'), requireHeader('api-token'), (r
 app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
   const GuildId = req.headers['guild-id'];
   const Token = req.headers['api-token'];
-
   const Log = req.body;
   
   if (Log) {
@@ -190,8 +189,11 @@ app.post("/pointslog/new", requireHeader('guild-id'), requireHeader('api-token')
         get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
           if (snapshot2.exists()) {
             if (snapshot2.val() === Token) {
-              const JSONLog = JSON.parse(req.body);
-              console.log(JSONLog)
+              const JSONLog = JSON.parse(Log);
+              
+              JSONLog.array.forEach(function (item, index) {
+                
+              });
 
               res.status(200).json({ success: "Log entry added successfully!" });
             } else {
