@@ -16,7 +16,8 @@
     "point-of-view": "^6.3.0",
     "request": "^2.88.2",
     "firebase": "^9.17.2",
-    "firebase-functions": "^4.2.1"
+    "firebase-functions": "^4.2.1",
+    "randomstring": "^1.2.3"
   },
   "engines": {
     "node": "12.x"
