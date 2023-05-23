@@ -179,6 +179,45 @@ app.get("/points/get", requireHeader('guild-id'), requireHeader('api-token'), (r
   }
 });
 
+// app.get("/schedule/get", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
+//   const GuildId = req.headers['guild-id'];
+//   const Token = req.headers['api-token'];
+
+//      get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
+//        if (snapshot.exists()) {
+//          get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
+//            if (snapshot2.exists()) {
+//              if (snapshot2.val() === Token) {
+//                get(child(DatabaseDownload, `GuildsDatabase/${GuildId}/Schedule`)).then((snapshot3) => {
+// 								if (snapshot3.exists()) {
+//                   let currenttime = Math.floor(Date.now() / 1000);
+
+//                   const sortedSnapshots = [];
+									
+// 									snapshot3.forEach(function (childSnapshot3) {
+// 									  if (currenttime >= childSnapshot3.child('timestamp').val()) {
+//                     } else {
+// 										sortedSnapshots.push(childSnapshot3);
+// 									  }
+// 									});
+                  
+//                 } else {
+//                    res.status(400).json({ error: "There are currently 0 events scheduled!" });
+// 								};
+// 							});
+//              } else {
+//                res.status(400).json({ error: "Invalid API Token!" });
+//              }; 
+//            } else {
+//              res.status(400).json({ error: "Invalid API Token!" });
+//            };
+//          });
+//        } else {
+//           res.status(400).json({ error: "Invalid GuildId!" });
+//        };
+//      });
+// });
+
 app.get("/verify/get", (req, res) => {
   const userID = req.query.userid;
   
