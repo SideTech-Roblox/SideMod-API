@@ -65,196 +65,121 @@ const requireHeader = (headerName) => {
   };
 };
 
-app.get("/notes/get", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
+app.get("/data/get", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
   const GuildId = req.headers['guild-id'];
   const Token = req.headers['api-token'];
-
   const UserId = req.query.userid;
 
-  if (UserId) {
-    get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
-          if (snapshot2.exists()) {
-            if (snapshot2.val() === Token) {
-              if (snapshot.child('UserData').exists()) {
-                if (snapshot.child('UserData').child(UserId).exists()) {
-                  if (snapshot.child('UserData').child(UserId).child('Notes').exists()) {
-                    const data = {
-                      RobloxId: UserId,
-                      Notes: snapshot.child('UserData').child(UserId).child('Notes').val()
-                    };
-                    res.status(200).json(data);
-                  } else {
-                    const data = {
-                      RobloxId: UserId,
-                      Notes: 'None'
-                    };
-                    res.status(200).json(data);
-                  };
-                } else {
-                  const data = {
-                    RobloxId: UserId,
-                    Notes: 'None'
-                  };
-                  res.status(200).json(data);
-                };
-              } else {
-                const data = {
-                  RobloxId: UserId,
-                  Notes: 'None'
-                };
-                res.status(200).json(data);
-              };
-            } else {
-              res.status(400).json({ error: "Invalid API Token!" });
-            };
-          } else {
-            res.status(400).json({ error: "Invalid API Token!" });
-          };
-        });
-      } else {
-        res.status(400).json({ error: "Invalid GuildId!" });
-      };
-    });
-  } else {
-    res.status(400).json({ error: "Invalid User!" });
+  if (!UserId) {
+    return res.status(400).json({ error: "Invalid User!" });
   }
+
+  get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`))
+    .then((snapshot) => {
+      if (!snapshot.exists()) {
+        return res.status(400).json({ error: "Invalid GuildId!" });
+      }
+
+      return get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`))
+        .then((snapshot2) => {
+          if (!snapshot2.exists() || snapshot2.val() !== Token) {
+            return res.status(400).json({ error: "Invalid API Token!" });
+          }
+
+          const userDataRef = snapshot.child('UserData').child(UserId);
+          const points = userDataRef.child('Points').exists() ? userDataRef.child('Points').val() : 0;
+          const notes = userDataRef.child('Notes').exists() ? userDataRef.child('Notes').val() : 'None';
+
+          const data = {
+            RobloxId: UserId,
+            Points: points,
+            Notes: notes
+          };
+
+          return res.status(200).json(data);
+        });
+    })
+    .catch(() => {
+      return res.status(500).json({ error: "Internal Server Error" });
+    });
 });
 
-app.get("/points/get", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
+app.get("/schedule/get", requireHeader('guild-id'), requireHeader('api-token'), async (req, res) => {
   const GuildId = req.headers['guild-id'];
   const Token = req.headers['api-token'];
 
-  const UserId = req.query.userid;
+  try {
+    const guildSnapshot = await get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`));
+    if (!guildSnapshot.exists()) {
+      return res.status(400).json({ error: "Invalid GuildId!" });
+    }
 
-  if (UserId) {
-    get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
-          if (snapshot2.exists()) {
-            if (snapshot2.val() === Token) {
-              if (snapshot.child('UserData').exists()) {
-                if (snapshot.child('UserData').child(UserId).exists()) {
-                  if (snapshot.child('UserData').child(UserId).child('Points').exists()) {
-                    const data = {
-                      RobloxId: UserId,
-                      Points: snapshot.child('UserData').child(UserId).child('Points').val()
-                    };
-                    res.status(200).json(data);
-                  } else {
-                    const data = {
-                      RobloxId: UserId,
-                      Points: 0
-                    };
-                    res.status(200).json(data);
-                  };
-                } else {
-                  const data = {
-                    RobloxId: UserId,
-                    Points: 0
-                  };
-                  res.status(200).json(data);
-                };
-              } else {
-                const data = {
-                  RobloxId: UserId,
-                  Points: 0
-                };
-                res.status(200).json(data);
-              };
-            } else {
-              res.status(400).json({ error: "Invalid API Token!" });
-            };
-          } else {
-            res.status(400).json({ error: "Invalid API Token!" });
-          };
-        });
-      } else {
-        res.status(400).json({ error: "Invalid GuildId!" });
-      };
-    });
-  } else {
-    res.status(400).json({ error: "Invalid User!" });
-  }
-});
+    const apiKeySnapshot = await get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`));
+    if (!apiKeySnapshot.exists() || apiKeySnapshot.val() !== Token) {
+      return res.status(400).json({ error: "Invalid API Token!" });
+    }
 
-app.get("/schedule/get", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
-  const GuildId = req.headers['guild-id'];
-  const Token = req.headers['api-token'];
+    const scheduleSnapshot = await get(child(DatabaseDownload, `GuildsDatabase/${GuildId}/Schedule`));
+    if (!scheduleSnapshot.exists()) {
+      return res.status(400).json({ error: "There are currently 0 events scheduled!" });
+    }
 
-  get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`)).then((snapshot) => {
-    if (snapshot.exists()) {
-      get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`)).then((snapshot2) => {
-        if (snapshot2.exists()) {
-          if (snapshot2.val() === Token) {
-            get(child(DatabaseDownload, `GuildsDatabase/${GuildId}/Schedule`)).then((snapshot3) => {
-              if (snapshot3.exists()) {
-                let currenttime = Math.floor(Date.now() / 1000);
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const sortedSnapshots = [];
 
-                const sortedSnapshots = [];
-
-                snapshot3.forEach(function (childSnapshot3) {
-                  if (currenttime <= childSnapshot3.child('timestamp').val()) {
-                    sortedSnapshots.push(childSnapshot3);
-                  }
-                });
-
-                if (sortedSnapshots.length === 0) {
-                  return res.status(400).json({ error: "There are currently 0 events scheduled!" });
-                }
-
-                sortedSnapshots.sort(function (a, b) {
-                  return a.child('timestamp').val() - b.child('timestamp').val();
-                });
-
-                const list = {};
-
-                sortedSnapshots.forEach(function (snapshot4) {
-                  list[snapshot4.key] = {
-                    host: snapshot4.child('host').val(),
-                    duration: snapshot4.child('duration').val(),
-                    notes: snapshot4.child('notes').val(),
-                    eventtype: snapshot4.child('eventtype').val(),
-                    timestamp: snapshot4.child('timestamp').val(),
-                  };
-                });
-
-                res.status(200).json(list);
-              } else {
-                res.status(400).json({ error: "There are currently 0 events scheduled!" });
-              };
-            });
-          } else {
-            res.status(400).json({ error: "Invalid API Token!" });
-          };
-        } else {
-          res.status(400).json({ error: "Invalid API Token!" });
-        };
-      });
-    } else {
-      res.status(400).json({ error: "Invalid GuildId!" });
-    };
-  });
-});
-
-app.get("/verify/get", (req, res) => {
-  const userID = req.query.userid;
-
-  if (userID) {
-    get(child(DatabaseDownload, `VerifyDatabase/${userID}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = {
-          RobloxId: snapshot.val(),
-          DiscordId: snapshot.key
-        };
-        res.status(200).json(data);
-      } else {
-        res.status(400).json({ error: "User is not verified!" });
+    scheduleSnapshot.forEach((childSnapshot) => {
+      if (currentTimestamp <= childSnapshot.child('timestamp').val()) {
+        sortedSnapshots.push(childSnapshot);
       }
     });
-  } else {
-    res.status(400).json({ error: "Invalid User!" });
+
+    if (sortedSnapshots.length === 0) {
+      return res.status(400).json({ error: "There are currently 0 events scheduled!" });
+    }
+
+    sortedSnapshots.sort((a, b) => {
+      return a.child('timestamp').val() - b.child('timestamp').val();
+    });
+
+    const list = {};
+
+    sortedSnapshots.forEach((snapshot) => {
+      list[snapshot.key] = {
+        host: snapshot.child('host').val(),
+        duration: snapshot.child('duration').val(),
+        notes: snapshot.child('notes').val(),
+        eventtype: snapshot.child('eventtype').val(),
+        timestamp: snapshot.child('timestamp').val(),
+      };
+    });
+
+    res.status(200).json(list);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/verify/get", async (req, res) => {
+  const userID = req.query.userid;
+
+  try {
+    if (!userID) {
+      return res.status(400).json({ error: "Invalid User!" });
+    }
+
+    const snapshot = await get(child(DatabaseDownload, `VerifyDatabase/${userID}`));
+
+    if (snapshot.exists()) {
+      const data = {
+        RobloxId: snapshot.val(),
+        DiscordId: snapshot.key
+      };
+      return res.status(200).json(data);
+    } else {
+      return res.status(400).json({ error: "User is not verified!" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
