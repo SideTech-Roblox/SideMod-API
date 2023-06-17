@@ -104,6 +104,60 @@ app.get("/data/get", requireHeader('guild-id'), requireHeader('api-token'), (req
     });
 });
 
+app.patch("/data/addpoints", requireHeader('guild-id'), requireHeader('api-token'), (req, res) => {
+  const GuildId = req.headers['guild-id'];
+  const Token = req.headers['api-token'];
+  const Body = req.body;
+
+  if (!Body || typeof Body !== 'object' || Array.isArray(Body)) {
+    return res.status(400).json({ error: "Invalid Body! Body must be an object with user IDs and points." });
+  }
+
+  const data = Object.entries(Body).map(([userId, points]) => ({
+    userId: Number(userId),
+    points: Number(points)
+  }));
+
+  if (data.length === 0) {
+    return res.status(400).json({ error: "Invalid Body! Body must contain at least one user ID and points pair." });
+  }
+
+  get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`))
+    .then((snapshot) => {
+      if (!snapshot.exists()) {
+        return res.status(400).json({ error: "Invalid GuildId!" });
+      }
+
+      return get(child(DatabaseDownload, `APIKeyDatabase/${GuildId}`))
+        .then((snapshot2) => {
+          if (!snapshot2.exists() || snapshot2.val() !== Token) {
+            return res.status(400).json({ error: "Invalid API Token!" });
+          }
+
+          const databasesave = getDatabase();
+
+          data.forEach(({ userId, points }) => {
+            if (typeof userId !== 'number' || typeof points !== 'number') {
+              return res.status(400).json({ error: "Invalid user ID or points! Both must be numbers." });
+            }
+
+            const userDataRef = snapshot.child('UserData').child(userId);
+            const existingPoints = userDataRef.child('Points').exists() ? userDataRef.child('Points').val() : 0;
+            const newPoints = existingPoints + points;
+
+            update(ref(databasesave, `GuildsDatabase/${GuildId}/UserData/${userId}`), {
+              Points: newPoints,
+            });
+          });
+
+          return res.status(200).json("Points added successfully!");
+        });
+    })
+    .catch(() => {
+      return res.status(500).json({ error: "Internal Server Error" });
+    });
+});
+
 app.get("/schedule/get", requireHeader('guild-id'), requireHeader('api-token'), async (req, res) => {
   const GuildId = req.headers['guild-id'];
   const Token = req.headers['api-token'];
