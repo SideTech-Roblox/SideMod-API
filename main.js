@@ -105,11 +105,15 @@ app.get("/data/get", requireHeader('guild-id'), requireHeader('api-token'), (req
     });
 });
 
-app.post("/data/addpoints", requireHeader('guild-id'), requireHeader('api-token'), async (req, res) => {
+app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), async (req, res) => {
   try {
     const GuildId = req.headers['guild-id'];
     const Token = req.headers['api-token'];
     const Body = req.body;
+    let Notes = req.query.notes || "None";
+    let Host = req.query.host || "Server";
+    const randomToken = randomstring.generate(20);
+    const databasesave = getDatabase();
 
     if (!Body || !Array.isArray(Body)) {
       return res.status(400).json({ error: "Invalid Body! Body must be an array with user IDs and points." });
@@ -134,24 +138,25 @@ app.post("/data/addpoints", requireHeader('guild-id'), requireHeader('api-token'
       return res.status(400).json({ error: "Invalid API Token!" });
     }
 
-    const databasesave = getDatabase();
+    const pendingDataRef = ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}`);
+    await update(pendingDataRef, {
+      Notes: Notes,
+      Host: Host,
+    });
 
     for (const { userId, points } of data) {
       if (typeof userId !== 'number' || typeof points !== 'number') {
         return res.status(400).json({ error: "Invalid user ID or points! Both must be numbers." });
       }
 
-      const userDataRef = snapshot.child('UserData').child(String(userId));
-      const existingPoints = userDataRef.child('Points').exists() ? userDataRef.child('Points').val() : 0;
-      const newPoints = existingPoints + points;
-
-      await update(ref(databasesave, `GuildsDatabase/${GuildId}/UserData/${userId}`), {
-        Points: newPoints,
+      const userDataRef = ref(pendingDataRef, 'Data');
+      await update(userDataRef, {
+        [userId]: points,
       });
     }
 
     return res.status(200).json("Points added successfully!");
-  } catch {
+  } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
