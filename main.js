@@ -155,7 +155,7 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
       });
     }
 
-    return res.status(200).json("Points added successfully!");
+    return res.status(200).json("Log added successfully!");
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
