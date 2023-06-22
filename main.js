@@ -137,22 +137,20 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
     if (!snapshot2.exists() || snapshot2.val() !== Token) {
       return res.status(400).json({ error: "Invalid API Token!" });
     }
-
-    const pendingDataRef = ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}`);
-    await update(pendingDataRef, {
+    
+    update(ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}`), {
       Notes: Notes,
       Host: Host,
-    });
+		});
 
     for (const { userId, points } of data) {
       if (typeof userId !== 'number' || typeof points !== 'number') {
         return res.status(400).json({ error: "Invalid user ID or points! Both must be numbers." });
       }
-
-      const userDataRef = ref(pendingDataRef, 'Data');
-      await update(userDataRef, {
+      
+      update(ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}/Data`), {
         [userId]: points,
-      });
+		  });
     }
 
     return res.status(200).json("Log added successfully!");
