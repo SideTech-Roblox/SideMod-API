@@ -111,18 +111,17 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
     const randomToken = randomstring.generate(20);
     const databasesave = getDatabase();
 
-    if (!Body || !Array.isArray(Body)) {
-      return res.status(400).json({ error: "Invalid Body! Body must be an array." });
+    if (!Body || (typeof Body !== 'object' && !Array.isArray(Body))) {
+      return res.status(400).json({ error: "Invalid Body! Body must be an array or an object." });
     }
 
     const datatable = {
       "host": Body.host || "Server",
       "time": Math.floor(Date.now() / 1000),
       "notes": Body.notes || "None",
-      "points": Body.points
     };
 
-    const data = datatable.points.map(([userId, points]) => ({
+    const data = Body.points.map(([userId, points]) => ({
       userId: Number(userId),
       points: Number(points)
     }));
@@ -140,21 +139,21 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
     if (!snapshot2.exists() || snapshot2.val() !== Token) {
       return res.status(400).json({ error: "Invalid API Token!" });
     }
-    
+
     update(ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}`), {
       Time: datatable.time,
       Notes: datatable.notes,
       Host: datatable.host,
-		});
+    });
 
     for (const { userId, points } of data) {
       if (typeof userId !== 'number' || typeof points !== 'number') {
         return res.status(400).json({ error: "Invalid user ID or points! Both must be numbers." });
       }
-      
+
       update(ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}/Data`), {
         [userId]: points,
-		  });
+      });
     }
 
     return res.status(200).json("Log added successfully!");
