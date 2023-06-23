@@ -108,22 +108,27 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
     const GuildId = req.headers['guild-id'];
     const Token = req.headers['api-token'];
     const Body = req.body;
-    let Notes = req.query.notes || "None";
-    let Host = req.query.host || "Server";
     const randomToken = randomstring.generate(20);
     const databasesave = getDatabase();
 
     if (!Body || !Array.isArray(Body)) {
-      return res.status(400).json({ error: "Invalid Body! Body must be an array with user IDs and points." });
+      return res.status(400).json({ error: "Invalid Body! Body must be an array." });
     }
 
-    const data = Body.map(([userId, points]) => ({
+    const datatable = {
+      "host": Body.host || "Server",
+      "time": Math.floor(Date.now() / 1000),
+      "notes": Body.notes || "None",
+      "points": Body.points
+    };
+
+    const data = datatable.points.map(([userId, points]) => ({
       userId: Number(userId),
       points: Number(points)
     }));
 
     if (data.length === 0) {
-      return res.status(400).json({ error: "Invalid Body! Body must contain at least one user ID and points pair." });
+      return res.status(400).json({ error: "Invalid Body! Body must contain data." });
     }
 
     const snapshot = await get(child(DatabaseDownload, `GuildsDatabase/${GuildId}`));
@@ -137,8 +142,9 @@ app.post("/data/log", requireHeader('guild-id'), requireHeader('api-token'), asy
     }
     
     update(ref(databasesave, `GuildsDatabase/${GuildId}/PendingData/${randomToken}`), {
-      Notes: Notes,
-      Host: Host,
+      Time: datatable.time,
+      Notes: datatable.notes,
+      Host: datatable.host,
 		});
 
     for (const { userId, points } of data) {
